@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native"; // как провайдер в реакте обвертка BrowserRouter
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
+import { Context } from "./context";
 
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
@@ -10,8 +11,9 @@ import useRoute from "./router";
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
+  const [currentPath, setCurrentPath] = useState(null);
   const [fontIsLoaded, setFontIsLoaded] = useState(false);
-  const routing = useRoute();
+  const routing = useRoute(false);
 
   useEffect(() => {
     async function prepare() {
@@ -38,9 +40,10 @@ export default function App() {
   }
 
   return (
-    <Provider storeк={store}>
-      <NavigationContainer>{routing}</NavigationContainer>
+    <Provider store={store}>
+      <Context.Provider value={{ setCurrentPath, currentPath }}>
+        <NavigationContainer>{routing}</NavigationContainer>
+      </Context.Provider>
     </Provider>
   );
 }
-к;

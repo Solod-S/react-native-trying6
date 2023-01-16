@@ -36,9 +36,10 @@ const initialState = {
 
 export default function CreateScreen({ navigation }) {
   //location
-  const [permission, requestPermission] = Camera.useCameraPermissions();
+  const [location, setLocation] = useState("denied");
 
   //camera
+  const [permission, requestPermission] = Camera.useCameraPermissions();
   const [camera, setCamera] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -60,10 +61,13 @@ export default function CreateScreen({ navigation }) {
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
-        return;
-      }
+      setLocation(status);
+      console.log(`status`, status);
+
+      // if (status !== "granted") {
+      //   setErrorMsg("Permission to access location was denied");
+      //   return;
+      // }
     })();
     requestPermission;
     const onChangeDimension = () => {
@@ -120,15 +124,18 @@ export default function CreateScreen({ navigation }) {
         longitude: location.coords.longitude,
       });
       setPost((prevState) => ({ ...prevState, region: regionData[0] }));
-      setLoading(false);
     };
 
     try {
       setLoading(true);
       makePhoto();
-      takeLocation();
+      if (location === "granted") {
+        takeLocation();
+      }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 

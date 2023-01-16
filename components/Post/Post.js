@@ -37,20 +37,22 @@ export default function Post({
             <Text style={styles.postCommentNumber}>{comments}</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.6}
-          onPress={() => navigation.navigate("MapScreen", region)}
-        >
-          <View style={styles.postLocationThmb}>
-            <Feather
-              name="map-pin"
-              style={styles.postLocationIcon}
-              size={18}
-              color="black"
-            />
-            <Text style={styles.postLocationTitle}>{location}</Text>
-          </View>
-        </TouchableOpacity>
+        {region && (
+          <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={() => navigation.navigate("MapScreen", region)}
+          >
+            <View style={styles.postLocationThmb}>
+              <Feather
+                name="map-pin"
+                style={styles.postLocationIcon}
+                size={18}
+                color="black"
+              />
+              <Text style={styles.postLocationTitle}>{location}</Text>
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
