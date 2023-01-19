@@ -4,6 +4,9 @@ import { TouchableOpacity, Image } from "react-native";
 import { useContext, useEffect } from "react";
 import { Context } from "../context";
 import { useIsFocused } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+
+import { authSignOutUser } from "../redux/auth/authOperation";
 
 //screens
 import screens from "../screens";
@@ -18,6 +21,7 @@ const LogOutIcon = require("../assets/icon/log-out.png");
 const MainTab = createBottomTabNavigator();
 
 export default function Home({ navigation }) {
+  const dispatch = useDispatch();
   const { currentPath } = useContext(Context);
 
   return (
@@ -50,7 +54,7 @@ export default function Home({ navigation }) {
           headerRight: () => (
             <TouchableOpacity
               activeOpacity={0.6}
-              onPress={() => navigation.navigate("Login")}
+              onPress={() => dispatch(authSignOutUser())}
             >
               <Image source={LogOutIcon} style={{ marginRight: 16 }} />
             </TouchableOpacity>

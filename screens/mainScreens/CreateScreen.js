@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc } from "firebase/firestore";
+import { fsbase } from "../../firebase/config";
 import {
   MaterialIcons,
   Foundation,
   FontAwesome,
   Ionicons,
 } from "@expo/vector-icons";
+import { useSelector } from "react-redux";
 import { Camera, CameraType, FlashMode } from "expo-camera";
 import { useIsFocused } from "@react-navigation/native";
 import * as Location from "expo-location";
@@ -35,6 +39,7 @@ const initialState = {
 };
 
 export default function CreateScreen({ navigation }) {
+  const { userId, login } = useSelector((state) => state.auth);
   //location
   const [location, setLocation] = useState("denied");
 
@@ -45,7 +50,7 @@ export default function CreateScreen({ navigation }) {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const isFocused = useIsFocused();
   const [cameraType, setCameraType] = useState(CameraType.back);
-  const [flashMode, setFlashMode] = useState(FlashMode.on);
+  const [flashMode, setFlashMode] = useState(FlashMode.off);
 
   //other
   const [loading, setLoading] = useState(false);
@@ -62,8 +67,6 @@ export default function CreateScreen({ navigation }) {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       setLocation(status);
-      console.log(`status`, status);
-
       // if (status !== "granted") {
       //   setErrorMsg("Permission to access location was denied");
       //   return;
@@ -101,6 +104,45 @@ export default function CreateScreen({ navigation }) {
     };
   }, [photo, loading, post, cameraType]);
 
+  const uploadPhotoToServer = async () => {
+    const storage = getStorage();
+    const uniquePostId = Date.now().toString();
+    const storageRef = ref(storage, `photos/${uniquePostId}`);
+
+    const response = await fetch(photo);
+    const file = await response.blob();
+
+    const uploadPhoto = await uploadBytes(storageRef, file).then(() => {});
+
+    const processedPhoto = await getDownloadURL(
+      ref(storage, `photos/${uniquePostId}`)
+    )
+      .then((url) => {
+        return url;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    return processedPhoto;
+  };
+  const uploadPostToServer = async () => {
+    const photo = await uploadPhotoToServer();
+
+    try {
+      const userPost = await addDoc(collection(fsbase, "posts"), {
+        photo,
+        title: post.title,
+        location: post.location,
+        region: post.region,
+        userId,
+        login,
+      });
+      console.log(`userPost`, userPost);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
+  };
+
   const keyboardHide = () => {
     setKeyboardVisible(false);
     Keyboard.dismiss();
@@ -129,6 +171,7 @@ export default function CreateScreen({ navigation }) {
     try {
       setLoading(true);
       makePhoto();
+      uploadPostToServer();
       if (location === "granted") {
         takeLocation();
       }

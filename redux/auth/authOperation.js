@@ -14,15 +14,15 @@ import { authSlice } from "./authReducer";
 const { updateUserProfile, authStateChange, authSignOut } = authSlice.actions;
 
 export const authSignUpUser =
-  ({ login, email, password, image }) =>
+  ({ login, email, password, avatarImage }) =>
   async (dispatch) => {
-    console.log(login, email, password);
+    console.log(login, email, password, avatarImage);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
 
       await updateProfile(auth.currentUser, {
         displayName: login,
-        photoURL: image,
+        photoURL: avatarImage,
       });
 
       const { uid, displayName, photoURL } = auth.currentUser;
@@ -40,14 +40,52 @@ export const authSignUpUser =
     }
   };
 
-export const authSignInUser = async (dispatch, getState) => {
+export const authSignInUser =
+  ({ email, password }) =>
+  async (dispatch, getState) => {
+    try {
+      const user = await signInWithEmailAndPassword(auth, email, password);
+      const { uid, displayName, photoURL } = auth.currentUser;
+      dispatch(
+        updateUserProfile({
+          userId: uid,
+          login: displayName,
+          email,
+          logoImage: photoURL,
+        })
+      );
+    } catch (error) {
+      Alert.alert("Error! Email or password doesn't match!");
+    }
+  };
+
+export const authSignOutUser = () => async (dispatch, getState) => {
   try {
-    const user = await app.auth().createUserWithEmailAndPassword();
+    await signOut(auth);
+    dispatch(authSignOut());
   } catch (error) {
-    console.log(`error`, error.message);
+    console.log("error.message.sign-out:", error.message);
   }
 };
 
-const authSignOutUser = async (dispatch, getState) => {};
+export const authStateChangeUsers = () => async (dispatch) => {
+  await onAuthStateChanged(auth, (user) => {
+    try {
+      if (user) {
+        const userUpdateProfile = {
+          email: user.email,
+          logoImage: user.photoURL,
+          login: user.displayName,
+          userId: user.uid,
+        };
+
+        dispatch(updateUserProfile(userUpdateProfile));
+        dispatch(authStateChange({ stateChange: true }));
+      }
+    } catch (error) {
+      console.log("error.message.state-change:", error.message);
+    }
+  });
+};
 
 // export { authSignInUser, authSignUpUser, authSignOutUser };

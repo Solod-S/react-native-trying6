@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import {
   ImageBackground,
   StyleSheet,
@@ -14,7 +15,7 @@ import {
   Dimensions,
 } from "react-native";
 
-// import useRoute from "../../router";
+import { authSignInUser } from "../../redux/auth/authOperation";
 
 //stateSchema
 const initialState = {
@@ -26,6 +27,7 @@ const initialState = {
 const imageBG = require("../../assets/images/screenBg.jpg");
 
 export default function LoginScreen({ navigation }) {
+  const dispatch = useDispatch();
   const [showPass, setShowPass] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const [state, setState] = useState(initialState);
@@ -61,15 +63,14 @@ export default function LoginScreen({ navigation }) {
     };
   }, []);
 
-  const submitForm = () => {
+  const submitForm = async () => {
     keyboardHide();
-    navigation.navigate("Home", state);
+    dispatch(authSignInUser(state));
   };
 
   const keyboardHide = () => {
     setKeyboardVisible(false);
     Keyboard.dismiss();
-    // setState(initialState);
   };
 
   const toglePass = () => {

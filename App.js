@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native"; // как провайдер в реакте обвертка BrowserRouter
-import { Provider } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./redux/store";
 import { Context } from "./context";
+import { authStateChangeUsers } from "./redux/auth/authOperation";
 
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
@@ -15,7 +16,7 @@ export default function App() {
   const [fontIsLoaded, setFontIsLoaded] = useState(false);
   const routing = useRoute(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     async function prepare() {
       try {
         await SplashScreen.preventAutoHideAsync();
@@ -42,8 +43,21 @@ export default function App() {
   return (
     <Provider store={store}>
       <Context.Provider value={{ setCurrentPath, currentPath }}>
-        <NavigationContainer>{routing}</NavigationContainer>
+        <RouteSwitcher />
       </Context.Provider>
     </Provider>
   );
+}
+
+function RouteSwitcher() {
+  const { stateChange } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  useLayoutEffect(() => {
+    dispatch(authStateChangeUsers());
+  }, [stateChange]);
+
+  const routing = useRoute(stateChange);
+
+  return <NavigationContainer>{routing}</NavigationContainer>;
 }

@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
+import { app } from "../../firebase/config";
 import {
   ImageBackground,
   StyleSheet,
@@ -34,7 +35,6 @@ const avaLOgo = require("../../assets/images/avatarLogo.png");
 
 export default function RegistrationScreen({ navigation }) {
   const [state, setState] = useState(initialState);
-
   const [showPass, setShowPass] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const [dimensions, setdimensions] = useState(
@@ -93,55 +93,50 @@ export default function RegistrationScreen({ navigation }) {
   const uploadAvatarToServer = async () => {
     try {
       const storage = getStorage();
-      const id = uuidv4();
-      const storageRef = ref(storage, `avatarImage/${id}`);
-      // console.log(storageRef, `storageRef`);
+      const uniquePostId = Date.now().toString();
+      const storageRef = ref(storage, `avatarImage/${uniquePostId}`);
 
       const response = await fetch(state.avatarImage);
       const file = await response.blob();
-      console.log(`file`, file);
 
-      await uploadBytes(storageRef, file).then(() => {});
-      //uploading photo
-      const avatarUri = await getDownloadURL(ref(storage, `avatarImage/${id}`))
+      const uploadPhoto = await uploadBytes(storageRef, file).then(() => {});
+
+      const photoUri = await getDownloadURL(
+        ref(storage, `avatarImage/${uniquePostId}`)
+      )
         .then((url) => {
           return url;
         })
         .catch((error) => {
           console.log(error);
         });
-      return avatarUri;
+      return photoUri;
     } catch (error) {
       console.log(`uploadAvatarToServer.error`, error);
     }
   };
-
   const submitForm = async () => {
     try {
-      const avatarRef = await uploadAvatarToServer();
-      console.log(`avatarRef`, avatarRef);
+      const imageRef = await uploadAvatarToServer();
 
-      setState((prevState) => ({ ...prevState, myImage: avatarRef }));
+      setState((prevState) => ({ ...prevState, avatarImage: imageRef }));
       const newUser = {
-        avatarImage: avatarRef,
+        avatarImage: imageRef,
         login: state.login,
         email: state.email,
         password: state.password,
       };
+
       console.log(`newUser`, newUser);
       dispatch(authSignUpUser(newUser));
     } catch (error) {
       console.log(`submitForm.error`, error);
     }
-
-    // navigation.navigate("Home", state);
   };
 
   const keyboardHide = () => {
     setKeyboardVisible(false);
     Keyboard.dismiss();
-    // console.log(state);
-    // setState(initialState);
   };
 
   const toglePass = () => {

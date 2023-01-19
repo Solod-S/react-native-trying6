@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
+
 import {
   Text,
   View,
@@ -7,26 +8,28 @@ import {
   Dimensions,
   FlatList,
 } from "react-native";
+import { useSelector } from "react-redux";
 
-const profile = {
-  name: "Nataliaa Romanova",
-  email: "email@example.com",
-};
+// const profile = {
+//   name: "Nataliaa Romanova",
+//   email: "email@example.com",
+// };
 
 //components
 import Post from "../../components/Post/Post";
 
 //images
-const ava = require("../../assets/images/avatar.png");
+const avaLOgo = require("../../assets/images/avatarLogo.png");
 
 export default function DefaultPostsScreen({ navigation, route }) {
+  const { login, email, avatarImage } = useSelector((state) => state.auth);
+  console.log(avatarImage);
   const [posts, setPosts] = useState([]);
   const [dimensions, setdimensions] = useState(
     Dimensions.get("window").width - 16 * 2
   );
 
-  const { name, email } = profile;
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (route.params) {
       setPosts((prevState) => [...prevState, route.params]);
     }
@@ -40,14 +43,22 @@ export default function DefaultPostsScreen({ navigation, route }) {
     return () => {
       dimensionsHandler.remove();
     };
-  }, [route.params]);
+  }, [route.params, avatarImage]);
 
+  const userHasAvatar = avatarImage !== undefined && avatarImage !== null;
   return (
     <View style={{ ...styles.container, width: dimensions + 16 * 2 }}>
       <View style={styles.userThmb}>
-        <Image style={styles.avatar} source={ava} />
+        <Image
+          style={styles.avatar}
+          source={
+            userHasAvatar
+              ? { uri: avatarImage, height: 60, width: 60 }
+              : avaLOgo
+          }
+        />
         <View style={{ justifyContent: "center" }}>
-          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.name}>{login}</Text>
           <Text style={styles.email}>{email}</Text>
         </View>
       </View>

@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import {
   Text,
   View,
@@ -11,6 +13,8 @@ import {
   ScrollView,
 } from "react-native";
 
+import { authSignOutUser } from "../../redux/auth/authOperation";
+
 //components
 import ProfilePost from "../../components/ProfilePost/ProfilePost";
 
@@ -18,14 +22,18 @@ import ProfilePost from "../../components/ProfilePost/ProfilePost";
 import posts from "../../assets/data/posts.js";
 
 //images
-const avatar = require("../../assets/images/avatar.png");
+
 const imageBG = require("../../assets/images/screenBg.jpg");
-const image = require("../../assets/images/postImg1.png");
+// const image = require("../../assets/images/postImg1.png");
+const avaLOgo = require("../../assets/images/avatarLogo.png");
 
 //icons
 const LogOutIcon = require("../../assets/icon/log-out.png");
 
 export default function ProfileScreen({ navigation }) {
+  const { login, email, avatarImage } = useSelector((state) => state.auth);
+
+  const dispatch = useDispatch();
   const [dimensions, setdimensions] = useState(
     Dimensions.get("window").width - 16 * 2
   );
@@ -42,23 +50,29 @@ export default function ProfileScreen({ navigation }) {
     };
   }, []);
 
+  const userHasAvatar = avatarImage !== undefined && avatarImage !== null;
+
   return (
     <ImageBackground source={imageBG} style={styles.image}>
       <View style={styles.container}>
         <TouchableOpacity
           activeOpacity={0.6}
           style={{ position: "absolute", top: 22, right: 16 }}
-          onPress={() => navigation.navigate("Login")}
+          onPress={() => dispatch(authSignOutUser())}
         >
           <Image source={LogOutIcon} style={{}} />
         </TouchableOpacity>
         <View style={{ position: "absolute", top: -60 }}>
           <View>
             <Image
-              source={avatar}
+              source={
+                userHasAvatar
+                  ? { uri: avatarImage, height: 120, width: 120 }
+                  : avaLOgo
+              }
               style={{
-                width: 120,
                 height: 120,
+                width: 120,
                 objectFit: "cover",
                 borderRadius: 16,
               }}
@@ -97,7 +111,7 @@ export default function ProfileScreen({ navigation }) {
               fontFamily: "Roboto-Bold",
             }}
           >
-            Natali Romanova
+            {email}
           </Text>
         </View>
         {/* <FlatList
