@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Text,
   View,
@@ -13,13 +12,14 @@ import {
   ScrollView,
 } from "react-native";
 
+import { fsbase } from "../../firebase/config";
+import { collection, onSnapshot, where, query } from "firebase/firestore";
+
 import { authSignOutUser } from "../../redux/auth/authOperation";
 
 //components
 import ProfilePost from "../../components/ProfilePost/ProfilePost";
-
-//data
-import posts from "../../assets/data/posts.js";
+import Post from "../../components/Post/Post";
 
 //images
 
@@ -31,14 +31,36 @@ const avaLOgo = require("../../assets/images/avatarLogo.png");
 const LogOutIcon = require("../../assets/icon/log-out.png");
 
 export default function ProfileScreen({ navigation }) {
-  const { login, email, avatarImage } = useSelector((state) => state.auth);
+  const { login, email, avatarImage, userId } = useSelector(
+    (state) => state.auth
+  );
+  const [posts, setPosts] = useState([]);
 
   const dispatch = useDispatch();
   const [dimensions, setdimensions] = useState(
     Dimensions.get("window").width - 16 * 2
   );
 
+  const handlePosts = async () => {
+    try {
+      onSnapshot(
+        query(collection(fsbase, "posts"), where("userId", "==", userId)),
+        (docSnap) => {
+          const currentPosts = docSnap.docs.map((doc) => ({
+            ...doc.data(),
+            id: doc.id,
+          }));
+          const sortedPosts = currentPosts.sort((a, b) => a.made < b.made);
+          setPosts(sortedPosts);
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
+    handlePosts();
     const onChange = () => {
       const width = Dimensions.get("window").width - 16 * 2;
       setdimensions(width);
@@ -114,42 +136,35 @@ export default function ProfileScreen({ navigation }) {
             {email}
           </Text>
         </View>
-        {/* <FlatList
-          style={{ width: dimensions }}
-          data={posts}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={(item, indx) => indx.toString()}
-          renderItem={({ item }) => {
-            const { id, image, title, comments, location, like } = item;
-            return (
-              <ProfilePost
-                navigation={navigation}
-                key={id}
-                title={title}
-                image={image}
-                comments={comments}
-                location={location}
-                like={like}
-              />
-            );
-          }}
-        /> */}
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={{ width: dimensions }}
         >
           {posts &&
-            posts.map(({ id, image, title, comments, location, like }) => (
-              <ProfilePost
-                navigation={navigation}
-                key={id}
-                title={title}
-                image={image}
-                comments={comments}
-                location={location}
-                like={like}
-              />
-            ))}
+            posts.map(
+              ({
+                id,
+                photo,
+                title,
+                comments,
+                country,
+                city,
+                latitude,
+                longitude,
+              }) => (
+                <Post
+                  navigation={navigation}
+                  key={id}
+                  title={title}
+                  image={photo}
+                  comments={comments}
+                  city={city}
+                  country={country}
+                  latitude={latitude}
+                  longitude={longitude}
+                />
+              )
+            )}
         </ScrollView>
       </View>
     </ImageBackground>

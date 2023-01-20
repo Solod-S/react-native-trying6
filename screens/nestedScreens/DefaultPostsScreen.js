@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect } from "react";
-
+import { useSelector } from "react-redux";
 import {
   Text,
   View,
@@ -8,12 +8,9 @@ import {
   Dimensions,
   FlatList,
 } from "react-native";
-import { useSelector } from "react-redux";
 
-// const profile = {
-//   name: "Nataliaa Romanova",
-//   email: "email@example.com",
-// };
+import { collection, onSnapshot } from "firebase/firestore";
+import { fsbase } from "../../firebase/config";
 
 //components
 import Post from "../../components/Post/Post";
@@ -23,16 +20,14 @@ const avaLOgo = require("../../assets/images/avatarLogo.png");
 
 export default function DefaultPostsScreen({ navigation, route }) {
   const { login, email, avatarImage } = useSelector((state) => state.auth);
-  console.log(avatarImage);
+
   const [posts, setPosts] = useState([]);
   const [dimensions, setdimensions] = useState(
     Dimensions.get("window").width - 16 * 2
   );
 
-  useLayoutEffect(() => {
-    if (route.params) {
-      setPosts((prevState) => [...prevState, route.params]);
-    }
+  useEffect(() => {
+    handlePosts();
     const onChange = () => {
       const width = Dimensions.get("window").width - 16 * 2;
 
@@ -43,8 +38,19 @@ export default function DefaultPostsScreen({ navigation, route }) {
     return () => {
       dimensionsHandler.remove();
     };
-  }, [route.params, avatarImage]);
+  }, []);
 
+  const handlePosts = async () => {
+    onSnapshot(collection(fsbase, "posts"), (docSnap) => {
+      const currentPosts = docSnap.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      const sortedPosts = currentPosts.sort((a, b) => a.made < b.made);
+      setPosts(sortedPosts);
+    });
+  };
+  const keyExtractor = (item) => item?.id;
   const userHasAvatar = avatarImage !== undefined && avatarImage !== null;
   return (
     <View style={{ ...styles.container, width: dimensions + 16 * 2 }}>
@@ -65,19 +71,31 @@ export default function DefaultPostsScreen({ navigation, route }) {
       {posts && (
         <FlatList
           data={posts}
+          initialNumToRender={1}
           showsVerticalScrollIndicator={false}
-          keyExtractor={(item, indx) => indx.toString()}
+          // keyExtractor={(item, indx) => indx.toString()}
           renderItem={({ item }) => {
-            const { id, image, title, comments, location, region } = item;
+            const {
+              id,
+              photo,
+              title,
+              comments,
+              country,
+              city,
+              latitude,
+              longitude,
+            } = item;
             return (
               <Post
                 navigation={navigation}
                 key={id}
                 title={title}
-                image={image}
+                image={photo}
                 comments={comments}
-                location={location}
-                region={region}
+                city={city}
+                country={country}
+                latitude={latitude}
+                longitude={longitude}
               />
             );
           }}

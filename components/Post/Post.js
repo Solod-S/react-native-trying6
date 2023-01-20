@@ -2,15 +2,15 @@ import React from "react";
 import { StyleSheet, Image, Text, View, TouchableOpacity } from "react-native";
 import { FontAwesome5, Feather } from "@expo/vector-icons";
 
-const mapPin = require("../../assets/icon/map-pin.png");
-
 export default function Post({
   navigation,
   title,
   image,
   comments,
-  location,
-  region,
+  longitude,
+  latitude,
+  country,
+  city,
 }) {
   return (
     <View style={styles.post}>
@@ -37,10 +37,12 @@ export default function Post({
             <Text style={styles.postCommentNumber}>{comments}</Text>
           </View>
         </TouchableOpacity>
-        {region && (
+        {latitude && longitude && (
           <TouchableOpacity
             activeOpacity={0.6}
-            onPress={() => navigation.navigate("MapScreen", region)}
+            onPress={() =>
+              navigation.navigate("MapScreen", { latitude, longitude })
+            }
           >
             <View style={styles.postLocationThmb}>
               <Feather
@@ -49,7 +51,9 @@ export default function Post({
                 size={18}
                 color="black"
               />
-              <Text style={styles.postLocationTitle}>{location}</Text>
+              <Text style={styles.postLocationTitle}>
+                {country} {city}
+              </Text>
             </View>
           </TouchableOpacity>
         )}

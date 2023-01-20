@@ -86,7 +86,7 @@ export default function RegistrationScreen({ navigation }) {
         }));
       }
     } catch (error) {
-      console.log(error);
+      console.log("error.imageHander", error.message);
     }
   };
 
@@ -108,7 +108,7 @@ export default function RegistrationScreen({ navigation }) {
           return url;
         })
         .catch((error) => {
-          console.log(error);
+          console.log(`error.photoUri`, error);
         });
       return photoUri;
     } catch (error) {
@@ -127,7 +127,7 @@ export default function RegistrationScreen({ navigation }) {
         password: state.password,
       };
 
-      console.log(`newUser`, newUser);
+      // console.log(`newUser`, newUser);
       dispatch(authSignUpUser(newUser));
     } catch (error) {
       console.log(`submitForm.error`, error);

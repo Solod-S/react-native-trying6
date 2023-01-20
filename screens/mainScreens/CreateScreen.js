@@ -31,6 +31,8 @@ import {
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
+import takeDate from "../../utils/takeDate";
+
 //stateSchema
 const initialState = {
   title: "",
@@ -59,7 +61,7 @@ export default function CreateScreen({ navigation }) {
   const [dimensions, setdimensions] = useState(
     Dimensions.get("window").width - 16 * 2
   );
-  const id = uuidv4();
+
   const redyToPost = photo && post.title;
   const redyToDell = photo || post.title;
 
@@ -106,7 +108,7 @@ export default function CreateScreen({ navigation }) {
 
   const uploadPhotoToServer = async () => {
     const storage = getStorage();
-    const uniquePostId = Date.now().toString();
+    const uniquePostId = uuidv4();
     const storageRef = ref(storage, `photos/${uniquePostId}`);
 
     const response = await fetch(photo);
@@ -121,23 +123,27 @@ export default function CreateScreen({ navigation }) {
         return url;
       })
       .catch((error) => {
-        console.log(error);
+        console.log(`error.processedPhoto`, error);
       });
     return processedPhoto;
   };
   const uploadPostToServer = async () => {
-    const photo = await uploadPhotoToServer();
-
     try {
-      const userPost = await addDoc(collection(fsbase, "posts"), {
-        photo,
+      const postPhoto = await uploadPhotoToServer();
+      await addDoc(collection(fsbase, "posts"), {
+        photo: postPhoto,
         title: post.title,
-        location: post.location,
-        region: post.region,
+        latitude: post.location.latitude,
+        longitude: post.location.longitude,
+        country: post.region.country,
+        city: post.region.city,
         userId,
         login,
+        like: 0,
+        date: takeDate(),
+        made: Date.now().toString(),
+        comments: 0,
       });
-      console.log(`userPost`, userPost);
     } catch (error) {
       console.error("Error adding document: ", error);
     }
@@ -160,7 +166,10 @@ export default function CreateScreen({ navigation }) {
 
     const takeLocation = async () => {
       let location = await Location.getCurrentPositionAsync({});
-      setPost((prevState) => ({ ...prevState, location: location.coords }));
+      setPost((prevState) => ({
+        ...prevState,
+        location: location.coords,
+      }));
       const regionData = await Location.reverseGeocodeAsync({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
@@ -170,31 +179,32 @@ export default function CreateScreen({ navigation }) {
 
     try {
       setLoading(true);
-      makePhoto();
-      uploadPostToServer();
+      await makePhoto();
+
       if (location === "granted") {
-        takeLocation();
+        await takeLocation();
       }
     } catch (error) {
-      console.log(error);
+      console.log(`takePicture.error`, error);
     } finally {
       setLoading(false);
     }
   };
 
-  const submitForm = () => {
-    navigation.navigate("DefaultPostsScreen", {
-      id,
-      image: photo,
-      title: post.title,
-      comments: 3,
-      location: ` ${post.region.country}, ${post.region.city}`,
-      region: post.location,
-      like: 0,
-    });
+  const submitForm = async () => {
+    try {
+      setLoading(true);
+      await uploadPostToServer();
 
-    setPhoto(null);
-    setPost(initialState);
+      navigation.navigate("DefaultPostsScreen");
+      setLoading(false);
+      setPhoto(null);
+      setPost(initialState);
+    } catch (error) {
+      console.log(`submitForm.error`, error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onDell = () => {
@@ -247,7 +257,7 @@ export default function CreateScreen({ navigation }) {
                         onCameraReady={onCameraReady}
                         onMountError={(error) => {
                           154;
-                          console.log("cammera error", error);
+                          console.log("cammera.error", error);
                           155;
                         }}
                         ratio="1:1"

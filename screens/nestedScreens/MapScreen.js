@@ -30,7 +30,7 @@ export default function MapScreen({ route }) {
           key={new Date()}
           coordinate={{ latitude, longitude }}
           title="photo"
-          // description={marker.description}
+          description={"marker.description"}
         />
       </MapView>
     </View>

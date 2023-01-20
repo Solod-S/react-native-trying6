@@ -3,7 +3,13 @@ const takeDate = () => {
   let dd = String(today.getDate()).padStart(2, "0");
   let mm = String(today.getMonth() + 1).padStart(2, "0");
   let yyyy = today.getFullYear();
-  let hh = today.getHours() + ":" + today.getMinutes();
+  let hh =
+    today.getHours() +
+    ":" +
+    (today.getMinutes().length > 2
+      ? 0 + today.getMinutes()
+      : today.getMinutes());
+
   today = mm + "/" + dd + "/" + yyyy + " | " + hh;
   return today;
 };

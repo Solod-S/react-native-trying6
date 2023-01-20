@@ -16,7 +16,7 @@ export default function App() {
   const [fontIsLoaded, setFontIsLoaded] = useState(false);
   const routing = useRoute(false);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     async function prepare() {
       try {
         await SplashScreen.preventAutoHideAsync();
@@ -53,7 +53,7 @@ function RouteSwitcher() {
   const { stateChange } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     dispatch(authStateChangeUsers());
   }, [stateChange]);
 
