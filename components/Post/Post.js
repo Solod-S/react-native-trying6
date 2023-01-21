@@ -1,8 +1,9 @@
-import React from "react";
+import React, { memo } from "react";
+
 import { StyleSheet, Image, Text, View, TouchableOpacity } from "react-native";
 import { FontAwesome5, Feather } from "@expo/vector-icons";
 
-export default function Post({
+function Post({
   navigation,
   title,
   image,
@@ -11,6 +12,7 @@ export default function Post({
   latitude,
   country,
   city,
+  postId,
 }) {
   return (
     <View style={styles.post}>
@@ -23,10 +25,11 @@ export default function Post({
       <View style={styles.postFooter}>
         <TouchableOpacity
           activeOpacity={0.6}
-          onPress={() => navigation.navigate("CommentsScreen", { image })}
+          onPress={() =>
+            navigation.navigate("CommentsScreen", { image, postId })
+          }
         >
           <View style={styles.postCommentThmb}>
-            {/* <Image style={styles.postCommentIcon} source={commentPin} /> */}
             <FontAwesome5
               style={styles.postCommentIcon}
               name="comment"
@@ -61,6 +64,8 @@ export default function Post({
     </View>
   );
 }
+
+export default memo(Post);
 
 const styles = StyleSheet.create({
   post: {

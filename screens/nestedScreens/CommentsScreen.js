@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { AntDesign } from "@expo/vector-icons";
 import { ScrollView } from "react-native-gesture-handler";
 import { useContext } from "react";
@@ -16,26 +17,39 @@ import {
   Platform,
 } from "react-native";
 
-import { collection, addDoc, doc, onSnapshot } from "firebase/firestore";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
+import {
+  collection,
+  addDoc,
+  doc,
+  onSnapshot,
+  getFirestore,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
+
+import { getDatabase, ref, set } from "firebase/database";
+
 import { fsbase } from "../../firebase/config";
 
 import takeDate from "../../utils/takeDate";
+
+import Comment from "../../components/Comment/Comment";
+import { async } from "@firebase/util";
 
 //stateSchema
 const initialState = {
   comment: "",
 };
 
-//images
-// const img = require("../../assets/images/postImg1.png");
-const ava1 = require("../../assets/images/avatar2.jpg");
-const ava2 = require("../../assets/images/avatar.png");
-
 export default function CommentsScreen({ navigation, route }) {
   const { postId, image } = route.params;
+  const { login } = useSelector((state) => state.auth);
 
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const [comment, setComment] = useState(initialState);
+  const [allComments, setAllcomments] = useState([]);
   const [dimensions, setdimensions] = useState(
     Dimensions.get("window").width - 16 * 2
   );
@@ -44,6 +58,11 @@ export default function CommentsScreen({ navigation, route }) {
   );
 
   const { currentPath, setCurrentPath } = useContext(Context);
+
+  useEffect(() => {
+    fetchComents();
+    console.log(allComments);
+  }, []);
 
   useEffect(() => {
     setCurrentPath(route.name);
@@ -76,24 +95,48 @@ export default function CommentsScreen({ navigation, route }) {
     };
   }, []);
 
-  const sendCommentToServer = async () => {
-    const date = new Date().toLocaleDateString();
-    const time = new Date().toLocaleTimeString();
+  const fetchComents = async () => {
     try {
       const dbRef = doc(fsbase, "posts", postId);
-      await addDoc(collection(dbRef, "comments"), {
-        comment,
-        login,
-        date,
-        time,
+
+      onSnapshot(collection(dbRef, "comments"), (docSnap) => {
+        const currentComments = docSnap.docs.map((doc) => ({ ...doc.data() }));
+        console.log(`docSnap.docs.length`, docSnap.docs.length);
+        setAllcomments(currentComments);
       });
     } catch (error) {
-      console.log("error.message", error.message);
+      console.log(`getAllComents`, error);
     }
   };
 
-  const submitForm = () => {
-    sendCommentToServer();
+  const updateCommentCounter = async () => {
+    const db = getFirestore();
+    await updateDoc(doc(db, "posts", postId), {
+      comments: increment(1),
+    });
+  };
+
+  const sendCommentToServer = async () => {
+    const date = new Date().toLocaleDateString();
+    const time = new Date().toLocaleTimeString();
+    const uniqueCommentId = uuidv4();
+    try {
+      const dbRef = doc(fsbase, "posts", postId);
+      await addDoc(collection(dbRef, "comments"), {
+        comment: comment.comment,
+        login,
+        date,
+        time,
+        id: uniqueCommentId,
+      });
+    } catch (error) {
+      console.log("error.sendCommentToServer", error.message);
+    }
+  };
+
+  const submitForm = async () => {
+    await sendCommentToServer();
+    await updateCommentCounter();
     setComment("");
     Keyboard.dismiss();
     setKeyboardVisible(false);
@@ -119,7 +162,10 @@ export default function CommentsScreen({ navigation, route }) {
           showsVerticalScrollIndicator={false}
           style={{ ...styles.commentsList }}
         >
-          <View key="1" style={{ ...styles.comment, flexGrow: 1 }}>
+          {allComments &&
+            allComments.map((item) => <Comment key={item.id} item={item} />)}
+
+          {/* <View key="1" style={{ ...styles.comment, flexGrow: 1 }}>
             <View style={styles.imgThmb}>
               <Image source={ava1} style={styles.img} />
             </View>
@@ -182,7 +228,7 @@ export default function CommentsScreen({ navigation, route }) {
                 09 июня, 2020 | 09:14
               </Text>
             </View>
-          </View>
+          </View> */}
         </ScrollView>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : ""}>
           <View

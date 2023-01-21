@@ -26,7 +26,11 @@ export default function Home({ navigation }) {
 
   return (
     <MainTab.Navigator
+      // tabBarOptions={{
+      //   keyboardHidesTabBar: true,
+      // }}
       screenOptions={{
+        tabBarHideOnKeyboard: true,
         tabBarShowLabel: false,
         tabBarStyle: [
           {

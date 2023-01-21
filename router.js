@@ -7,7 +7,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import Home from "./screens/Home";
 import screens from "./screens";
-const { LoginScreen, RegistrationScreen, CommentsScreen } = screens;
+const { LoginScreen, RegistrationScreen } = screens;
 
 const AuthStack = createStackNavigator();
 const DashboardStack = createStackNavigator();

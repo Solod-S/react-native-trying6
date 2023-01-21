@@ -7,7 +7,7 @@ const takeDate = () => {
     today.getHours() +
     ":" +
     (today.getMinutes().length > 2
-      ? 0 + today.getMinutes()
+      ? "0" + today.getMinutes()
       : today.getMinutes());
 
   today = mm + "/" + dd + "/" + yyyy + " | " + hh;
