@@ -49,7 +49,7 @@ export default function DefaultPostsScreen({ navigation, route }) {
         // console.log(comments);
         return { ...doc.data(), id: doc.id };
       });
-      const sortedPosts = currentPosts.sort((a, b) => a.made < b.made);
+      const sortedPosts = currentPosts.sort((a, b) => a.created < b.created);
 
       setPosts(sortedPosts);
     });

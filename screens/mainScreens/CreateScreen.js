@@ -130,18 +130,20 @@ export default function CreateScreen({ navigation }) {
   const uploadPostToServer = async () => {
     try {
       const postPhoto = await uploadPhotoToServer();
+      const { title, location, region } = post;
+      const created = Date.now().toString();
       await addDoc(collection(fsbase, "posts"), {
         photo: postPhoto,
-        title: post.title,
-        latitude: post.location.latitude,
-        longitude: post.location.longitude,
-        country: post.region.country,
-        city: post.region.city,
+        title,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        country: region.country,
+        city: region.city,
         userId,
         login,
         like: 0,
         date: takeDate(),
-        made: Date.now().toString(),
+        created,
         comments: 0,
       });
     } catch (error) {

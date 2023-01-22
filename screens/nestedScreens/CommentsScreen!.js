@@ -156,33 +156,41 @@ export default function CommentsScreen({ navigation, route }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={{ ...styles.container }}>
       <View style={{ width: dimensions }}>
-        {!isKeyboardVisible && (
-          <>
-            <View style={styles.postImgThmb}>
-              <Image
-                source={{ uri: route.params.image, height: 300, width: "100%" }}
-                style={styles.postImg}
-              />
-            </View>
-          </>
-        )}
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ ...styles.commentsList, height: screenHeight - 500 }}
-        >
-          {/* {allComments &&
-            allComments.map(({ comment, login, date, time, commentId }) => (
-              <Comment
-                key={commentId}
-                comment={comment}
-                login={login}
-                date={date}
-                time={time}
-              />
-            ))} */}
-          {/* <View key="1" style={{ ...styles.comment, flexGrow: 1 }}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={{ justifyContent: "space-between" }}>
+            {!isKeyboardVisible && (
+              <>
+                <View style={styles.postImgThmb}>
+                  <Image
+                    source={{ uri: image, height: 300, width: "100%" }}
+                    style={styles.postImg}
+                  />
+                </View>
+              </>
+            )}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="always"
+              ref={scrollRef}
+              onContentSizeChange={() =>
+                scrollRef.current.scrollToEnd({ animated: true })
+              }
+              style={{ ...styles.commentsList }}
+            >
+              {allComments &&
+                allComments.map(({ comment, login, date, time, commentId }) => (
+                  <Comment
+                    key={commentId}
+                    comment={comment}
+                    login={login}
+                    date={date}
+                    time={time}
+                  />
+                ))}
+
+              {/* <View key="1" style={{ ...styles.comment, flexGrow: 1 }}>
             <View style={styles.imgThmb}>
               <Image source={ava1} style={styles.img} />
             </View>
@@ -246,40 +254,37 @@ export default function CommentsScreen({ navigation, route }) {
               </Text>
             </View>
           </View> */}
-        </ScrollView>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : ""}>
-          <View
-            style={{
-              ...styles.form,
-              paddingBottom: isKeyboardVisible ? 10 : 0,
-              position: "absolute",
-              bottom: 0,
-            }}
-          >
-            <View style={{ ...styles.inputThmb, marginTop: "auto" }}>
-              <TextInput
-                placeholder="Комментировать..."
-                value={comment.comment}
-                style={styles.input}
-                textAlign={"left"}
-                onFocus={() => setKeyboardVisible(true)}
-                onChangeText={(value) =>
-                  setComment((prevState) => ({
-                    ...prevState,
-                    comment: value,
-                  }))
-                }
-              />
-              <TouchableOpacity
-                activeOpacity={0.6}
-                style={styles.subBtn}
-                onPress={() => submitForm()}
+            </ScrollView>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : ""}
+            >
+              <View
+                style={{
+                  ...styles.form,
+                  paddingBottom: isKeyboardVisible ? 10 : 0,
+                }}
               >
-                <AntDesign name="arrowup" size={14} color="white" />
-              </TouchableOpacity>
-            </View>
+                <View style={{ ...styles.inputThmb }}>
+                  <TextInput
+                    placeholder="Комментировать..."
+                    value={comment}
+                    style={styles.input}
+                    textAlign={"left"}
+                    onFocus={() => setKeyboardVisible(true)}
+                    onChangeText={(value) => setComment(value)}
+                  />
+                  <TouchableOpacity
+                    activeOpacity={0.6}
+                    style={styles.subBtn}
+                    onPress={() => submitForm()}
+                  >
+                    <AntDesign name="arrowup" size={14} color="white" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </KeyboardAvoidingView>
           </View>
-        </KeyboardAvoidingView>
+        </ScrollView>
       </View>
     </View>
   );
@@ -289,6 +294,7 @@ export default function CommentsScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "space-between",
     paddingTop: 32,
     paddingBottom: 16,
     alignItems: "center",
@@ -296,11 +302,11 @@ const styles = StyleSheet.create({
   },
 
   postImgThmb: {
-    width: "100%",
-    marginBottom: 32,
+    // marginBottom: 32,
   },
   postImg: {
-    width: "100%",
+    // flexGrow: 1,
+    // width: "100%",
     borderRadius: 8,
     marginBottom: 8,
   },
@@ -356,7 +362,11 @@ const styles = StyleSheet.create({
   dateReverse: {
     textAlign: "left",
   },
-
+  form: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+  },
   inputThmb: {
     marginTop: "auto",
     position: "relative",

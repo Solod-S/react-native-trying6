@@ -44,6 +44,9 @@ export default function Home({ navigation }) {
         // syyle={{ display: "none" }}
         name="PostsScreen"
         options={{
+          tabBarStyle:
+            currentPath !== null ? { display: "none" } : { display: "flex" },
+          tabBarVisible: currentPath !== null ? false : true,
           headerShown: currentPath !== null ? false : true,
           tabBarVisible: false,
           title: "Публикации",

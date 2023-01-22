@@ -50,7 +50,9 @@ export default function ProfileScreen({ navigation }) {
             ...doc.data(),
             id: doc.id,
           }));
-          const sortedPosts = currentPosts.sort((a, b) => a.made < b.made);
+          const sortedPosts = currentPosts.sort(
+            (a, b) => a.created < b.created
+          );
           setPosts(sortedPosts);
         }
       );
